@@ -153,13 +153,17 @@ AFRAME.registerSystem('brush', {
 
       for (var l = 0; l < numStrokes; l++) {
         var brushIndex = binaryManager.readUint8();
+        var brushName = usedBrushes[brushIndex];
         var color = binaryManager.readColor();
         var size = binaryManager.readFloat();
         var numPoints = binaryManager.readUint32();
-
-        var stroke = this.addNewStroke(usedBrushes[brushIndex], color, size);
+        var stroke = this.addNewStroke(brushName, color, size);
 
         var entity = document.createElement('a-entity');
+        var brushData = {brush: brushName, color: '#' + color.getHexString(), size: size};
+
+        AFRAME.utils.entity.setComponentProperty(entity, 'stroke', brushData);
+
         document.querySelector('a-scene').appendChild(entity);
         entity.setObject3D('mesh', stroke.object3D);
 
@@ -265,8 +269,11 @@ AFRAME.registerComponent('brush', {
   startNewStroke: function () {
     this.currentLine = this.system.addNewStroke(this.currentBrushName, this.color, this.brushSize);
     var entity = document.createElement('a-entity');
+    var brushData = {brush: this.currentBrushName, color: '#' + this.color.getHexString(), size: this.brushSize};
+    AFRAME.utils.entity.setComponentProperty(entity, 'stroke', brushData);
     this.el.sceneEl.appendChild(entity);
     entity.setObject3D('mesh', this.currentLine.object3D);
+
     this.strokeEntities.push(entity);
     this.el.emit('stroke-started', {entity: this.el, stroke: this.currentLine});
   }
